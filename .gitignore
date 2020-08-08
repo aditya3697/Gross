@@ -1,0 +1,5 @@
+## compiled classes
+*.class
+
+# build log file
+build.log

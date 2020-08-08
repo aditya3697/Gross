@@ -1,23 +1,29 @@
+package server;
+
 import java.io.*;
 import java.net.*;
+import utils.GrossLogger;
 
-public class HttpServer {
+public class HttpServer extends Thread {
 
     private int port;
-    private Socket socket = null;
+    private String address;
     private ServerSocket server = null;
-    private DataInputStream in = null;
 
-    public HttpServer(int port) throws IOException {
+    public HttpServer(int port, String address) throws IOException
+    {
         this.port = port;
-        this.server = new ServerSocket(port);
+        this.address = address;
+        this.server = new ServerSocket(port, ServerProperties.clientsBacklog);
     }
 
-    public static void main(String args[]) throws IOException {
-        HttpServer server = new HttpServer(9001);
-
-        System.out.println("port: " + server.port);
-
+    public void run()
+    {
+        while(true)
+        {
+            GrossLogger.info(String.format("Waiting for connection at %s:%d... ", address, port));
+            break;
+        }
     }
 
 }
