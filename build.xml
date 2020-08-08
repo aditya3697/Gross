@@ -1,6 +1,36 @@
-<project default="compile">
-    <target name="compile">
-        <mkdir dir="bin"/>
-        <javac srcdir="src" destdir="bin"/>
+<project>
+
+    <target name="clean">
+        <delete dir="build"/>
     </target>
+
+    <target name="compile">
+        <mkdir dir="build/server/classes"/>
+        <javac srcdir="src/server" destdir="build/server/classes"/>
+        <mkdir dir="build/client/classes"/>
+        <javac srcdir="src/client" destdir="build/client/classes"/>
+    </target>
+
+    <target name="jar">
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/Gross.jar" basedir="build/server/classes">
+            <manifest>
+                <attribute name="Main-Class" value="src/server/Gross"/>
+            </manifest>
+        </jar>
+        <jar destfile="build/jar/GrossTestClient.jar" basedir="build/client/classes">
+            <manifest>
+                <attribute name="Main-Class" value="src/client/GrossTestClient"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+        <java jar="build/jar/Gross.jar" fork="true"/>
+    </target>
+
+    <target name="run_client">
+        <java jar="build/jar/GrossTestClient.jar" fork="true"/>
+    </target>
+
 </project>
