@@ -2,7 +2,7 @@ package src.server;
 
 import java.io.*;
 import java.net.*;
-import src.utils.GrossLogger;
+import src.server.response.HttpResponseBuilder;
 
 public class HttpServer extends Thread {
 
@@ -30,11 +30,16 @@ public class HttpServer extends Thread {
                 System.out.println("Connection acception from "+ socket.getRemoteSocketAddress());
 
                 DataInputStream in = new DataInputStream(socket.getInputStream());
-                System.out.println(in.readUTF());
+                //System.out.println(in.readUTF());
 
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                out.writeUTF("Thank you for connecting to " + socket.getLocalSocketAddress()
+                System.out.println("Thank you for connecting to " + socket.getLocalSocketAddress()
                 + "\nGoodbye!");
+                String response = HttpResponseBuilder.getResponse("Yo! it worked!!");
+                System.out.println(response);
+
+                out.writeUTF(response);
+                out.flush();
                 socket.close();
             } catch (SocketTimeoutException e){
                 System.out.println("Socket timed out!");
