@@ -28,35 +28,34 @@ public class HttpServer extends Thread {
         {
             max_requests--;
             try {
+                // accept connection
                 System.out.println(String.format("Waiting for connection at %s:%d... ", address, port));
                 Socket socket = server.accept();
                 System.out.println("Connection acception from "+ socket.getRemoteSocketAddress());
 
+                // Read the request
                 BufferedReader requestReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                BufferedWriter responseWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                
                 // parse the received request
                 HttpRequest request = new HttpRequest(requestReader);
 
                 // handle the received request
-                String responseStr = request.handleRequest();
+                String response = request.handleRequest();
 
-                System.out.println("Thank you for connecting to " + socket.getLocalSocketAddress()
-                + "\nGoodbye!");
+                // // get the response to be sent
+                // String response = HttpResponseBuilder.getResponse(responseBody);
 
+                // initialize the output writter
+                BufferedWriter responseWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
-                // ---------- Temp Code ----------------
-                
-                String response = HttpResponseBuilder.getResponse(responseStr);
-
-                // --------- Temp Code End --------------
-
+                // log the response
                 System.out.println(response);
 
+                // send the response
                 responseWriter.write(response);
                 responseWriter.flush();
 
+                // close the connection
                 socket.close();
             } catch (SocketTimeoutException e){
                 System.out.println("Socket timed out!");

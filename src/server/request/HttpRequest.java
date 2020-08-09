@@ -37,6 +37,10 @@ public class HttpRequest {
         return this.uri;
     }
 
+    public String getVersion() {
+        return this.version;
+    }
+
     private void parseRequest() throws IOException, UnsupportedOperationException
     {
         if(request == null) {
