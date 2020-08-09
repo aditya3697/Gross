@@ -31,19 +31,18 @@ public class HttpServer extends Thread {
                 Socket socket = server.accept();
                 System.out.println("Connection acception from "+ socket.getRemoteSocketAddress());
 
-                DataInputStream in = new DataInputStream(socket.getInputStream());
-                //System.out.println(in.readUTF());
+                BufferedReader request = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                BufferedWriter bf = new BufferedWriter(
-                    new OutputStreamWriter(socket.getOutputStream()));
-                    
+                BufferedWriter responseWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                
+                System.out.println("request: " + request.readLine());
                 System.out.println("Thank you for connecting to " + socket.getLocalSocketAddress()
                 + "\nGoodbye!");
                 String response = HttpResponseBuilder.getResponse("Yo! it worked!!");
                 System.out.println(response);
 
-                bf.write(response);
-                bf.flush();
+                responseWriter.write(response);
+                responseWriter.flush();
 
                 socket.close();
             } catch (SocketTimeoutException e){
