@@ -9,21 +9,23 @@ public class HttpServer extends Thread {
     private int port;
     private String address;
     private ServerSocket server = null;
+    private int max_requests = ServerProperties.SERVER_GLOBAL_MAX_REQUESTS;
 
     public HttpServer(int port, String address) throws IOException
     {
         this.port = port;
         this.address = address;
-        this.server = new ServerSocket(port, ServerProperties.clientsBacklog);
+        this.server = new ServerSocket(port, ServerProperties.MAX_CLIENTS_BACKLOGS);
         
         // Lets wait for 2mins after starting
-        server.setSoTimeout(2 * 60 * 1000);
+        server.setSoTimeout(ServerProperties.SERVER_GLOBAL_TIMEOUT);
     }
 
     public void run()
     {
-        while(true)
+        while(max_requests > 0)
         {
+            max_requests--;
             try {
                 System.out.println(String.format("Waiting for connection at %s:%d... ", address, port));
                 Socket socket = server.accept();
@@ -32,14 +34,17 @@ public class HttpServer extends Thread {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 //System.out.println(in.readUTF());
 
-                DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                BufferedWriter bf = new BufferedWriter(
+                    new OutputStreamWriter(socket.getOutputStream()));
+                    
                 System.out.println("Thank you for connecting to " + socket.getLocalSocketAddress()
                 + "\nGoodbye!");
                 String response = HttpResponseBuilder.getResponse("Yo! it worked!!");
                 System.out.println(response);
 
-                out.writeUTF(response);
-                out.flush();
+                bf.write(response);
+                bf.flush();
+
                 socket.close();
             } catch (SocketTimeoutException e){
                 System.out.println("Socket timed out!");

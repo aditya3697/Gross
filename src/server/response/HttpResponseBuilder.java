@@ -27,7 +27,7 @@ public class HttpResponseBuilder {
 
     public static String getResponse(String responseBody, int statusCode)
     {
-        return getResponse(responseBody, statusCode, ContentType.HTML);
+        return getResponse(responseBody, statusCode, ContentType.PLAIN_TEXT);
     }
 
     public static String getResponse(String responseBody, int statusCode, ContentType contentType)
@@ -51,7 +51,7 @@ public class HttpResponseBuilder {
             response.append(String.format("Date: %s\r\n", getDate()));
             
             if(contentType != null && !contentType.equals("")) {
-                response.append(String.format("Content-type: %s\r\n", ContentTypes.getContentType(contentType)));
+                response.append(String.format("Content-Type: %s\r\n", ContentTypes.getContentType(contentType)));
             }
             
             if(responseBody != null) {
@@ -83,13 +83,13 @@ public class HttpResponseBuilder {
     // return the current date in sample format - Sat, 08 Aug 2020 22:58:56 IST
     public static String getDate()
     {
-        SimpleDateFormat formatter = new SimpleDateFormat("E, dd MM yyyy hh:mm:ss zzz");
+        SimpleDateFormat formatter = new SimpleDateFormat("E, dd MMM yyyy hh:mm:ss zzz");
         return formatter.format(new Date());
     }
 
     public static String getServerName()
     {
-        return ServerProperties.serverAddress;
+        return ServerProperties.GROSS_SERVER_NAME;
     }
 
     public static int getContentLength(String responseBody)

@@ -3,3 +3,6 @@
 
 # build log file
 build.log
+
+# removing jar files
+*.jar
