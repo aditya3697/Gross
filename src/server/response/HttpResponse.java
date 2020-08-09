@@ -9,13 +9,23 @@ public class HttpResponse
 {
     private String version;
     private int statusCode;
-    private String requestBody;
+    private String responseBody;
     
     private Map<ResponseHeader, String> responseHeaders = new HashMap<ResponseHeader, String>();
+
+    public HttpResponse()
+    {
+        this.version = "HTTP/1.1";
+    }
 
     public HttpResponse(String version) 
     {
         this.version = version;
+    }
+
+    public String getVersion()
+    {
+        return this.version;
     }
 
     public void setStatusCode(int statusCode) 
@@ -23,14 +33,24 @@ public class HttpResponse
         this.statusCode = statusCode;
     }
 
-    public String getRequestBody()
+    public int getStatusCode() 
     {
-        return this.requestBody;
+        return this.statusCode;
     }
 
-    public void setRequestBody(String requestBody) 
+    public String getResponseBody()
     {
-        this.requestBody = requestBody;
+        return this.responseBody;
+    }
+
+    public void setResponseBody(String responseBody) 
+    {
+        this.responseBody = responseBody;
+    }
+
+    public Map<ResponseHeader, String> getResponseHeaders()
+    {
+        return this.responseHeaders;
     }
 
     public void addHeader(ResponseHeader headerType, String headerValue) 
@@ -40,7 +60,9 @@ public class HttpResponse
 
     public String getResponseString(int statusCode)
     {
-        return null;
+        this.statusCode = statusCode;
+        HttpResponseBuilder responseBuilder = new HttpResponseBuilder(this);
+        return responseBuilder.getResponseString();
     }
 
 }

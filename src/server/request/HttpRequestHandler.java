@@ -26,7 +26,7 @@ public class HttpRequestHandler
     {
         try {
             String filepath = ServerProperties.GROSS_DEFAULT_SERVE_DIRECTORY + request.getUri();
-            System.out.println("Sending the file " + filepath);
+            System.out.println("Attempting to send the file " + filepath);
             File file = new File(filepath);
 
             if(!file.exists()) {
@@ -34,6 +34,8 @@ public class HttpRequestHandler
                 System.out.println("File Not Found");
                 return response.getResponseString(404);
             }
+
+            System.out.println("File found. Parsing the file " + filepath);
 
             // Add Content-Type header
             String mimeType = Files.probeContentType(file.toPath());
@@ -45,11 +47,11 @@ public class HttpRequestHandler
             fis.read(data);
             fis.close();
 
-            // Set request body
-            response.setRequestBody(new String(data, "UTF-8"));
+            // Set response body
+            response.setResponseBody(new String(data, "UTF-8"));
             
             // Add Content-Length header
-            response.addHeader(ResponseHeader.CONTENT_LENGTH, Integer.toString(response.getRequestBody().length()));
+            response.addHeader(ResponseHeader.CONTENT_LENGTH, Integer.toString(response.getResponseBody().length()));
 
             return response.getResponseString(200);
         } catch (UnsupportedEncodingException e) {

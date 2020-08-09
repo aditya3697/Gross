@@ -42,9 +42,6 @@ public class HttpServer extends Thread {
                 // handle the received request
                 String response = request.handleRequest();
 
-                // // get the response to be sent
-                // String response = HttpResponseBuilder.getResponse(responseBody);
-
                 // initialize the output writter
                 BufferedWriter responseWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 

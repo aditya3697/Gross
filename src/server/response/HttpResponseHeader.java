@@ -12,6 +12,10 @@ public class HttpResponseHeader
 
         private String header;
 
+        public String getHeader() {
+            return this.header;
+        }
+
         private ResponseHeader(String header) {
             this.header = header;
         }

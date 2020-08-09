@@ -1,76 +1,97 @@
 package src.server.response;
 
-import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
 import src.server.ServerProperties;
 import src.server.response.ContentTypes.ContentType;
+import src.server.response.HttpResponseHeader.ResponseHeader;
 
+/**
+ * sample response - 
+ * 
+ * HTTP/1.1 200 OK
+ * Server: GrossServer
+ * Date: Sat, 8 Aug 2020 22:58:56 IST
+ * Content-type: text/html; charset=UTF-8
+ * Content-Length: 24
+ *
+ * Response from the server
+ * 
+ */
 public class HttpResponseBuilder {
 
-    /**
-     * sample response - 
-     * 
-     * HTTP/1.1 200 OK
-     * Server: GrossServer
-     * Date: Sat, 8 Aug 2020 22:58:56 IST
-     * Content-type: text/html; charset=UTF-8
-     * Content-Length: 24
-     *
-     * Response from the server
-     * 
-     */
-    public static String getResponse(String responseBody)
+    private HttpResponse response;
+    
+    public HttpResponseBuilder(HttpResponse response)
     {
-        return getResponse(responseBody, 200);
+        this.response = response;
     }
 
-    public static String getResponse(String responseBody, int statusCode)
+    public String getResponseString()
     {
-        return getResponse(responseBody, statusCode, ContentType.PLAIN_TEXT);
-    }
+        try {
+            StringBuffer responseBuffer = new StringBuffer("");
 
-    public static String getResponse(String responseBody, int statusCode, ContentType contentType)
-    {
-        return getResponse(responseBody, statusCode, contentType, getServerName());
-    }
+            // response first line
+            responseBuffer.append(String.format("%s %d %s\r\n", response.getVersion(), response.getStatusCode(), getHttpResponseState(response.getStatusCode())));
 
-    public static String getResponse(String responseBody, int statusCode, ContentType contentType, String serverName)
-    {
-        StringBuffer response = new StringBuffer("");
-        try
-        {
-            response.append(String.format("HTTP/1.1 %d %s\r\n", statusCode, getHttpResponseState(statusCode)));
-            
-            if(serverName == null || serverName.isEmpty()) {
-                serverName = getServerName();
-            }
-            response.append(String.format("Server: %s\r\n", serverName));
+            // add headers
+            addHeadersToResponse(responseBuffer);
 
-            response.append(String.format("Date: %s\r\n", getDate()));
-            
-            if(contentType != null && !contentType.equals("")) {
-                response.append(String.format("Content-Type: %s\r\n", ContentTypes.getContentType(contentType)));
-            }
-            
-            if(responseBody != null) {
-                response.append(String.format("Content-Length: %s\r\n", getContentLength(responseBody)));
-            }
+            // Add response body if exists
+            addResponseBody(responseBuffer);
 
-            response.append(String.format("\r\n"));
-
-            response.append(responseBody);
-        } catch (Exception e){
+            return responseBuffer.toString();
+        } catch (Exception e) {
             e.printStackTrace();
-            // throw a 500 if the status code is not already 500
-            if(statusCode/100 != 5) {
-                // respond with an internal error msg
-                getResponse("We screwed up!!", 500);
+            if(response.getStatusCode() / 100 == 5) {
+                return null;
             }
+            return internalServerException();
         }
         
+    }
 
-        return response.toString();
+    private void addHeadersToResponse(StringBuffer responseBuffer)
+    {
+        Map<ResponseHeader, String> responseHeaders = response.getResponseHeaders();
+
+        setDefaultHeaderValues(responseHeaders);
+
+        for(ResponseHeader responseHeader : responseHeaders.keySet())
+        {
+            responseBuffer.append(String.format("%s: %s\r\n", responseHeader.getHeader(), responseHeaders.get(responseHeader)));
+        }
+    }
+
+    private void addResponseBody(StringBuffer responseBuffer)
+    {
+        String responseBody = response.getResponseBody();
+        if(responseBody != null && !responseBody.isEmpty())
+        {
+            // Add an empty line
+            responseBuffer.append("\r\n");
+
+            // Add response body
+            responseBuffer.append(responseBody);
+        }
+    }
+
+    private void setDefaultHeaderValues(Map<ResponseHeader, String> responseHeaders)
+    {
+        // Set Server name
+        if(!responseHeaders.containsKey(ResponseHeader.SERVER))
+        {
+            responseHeaders.put(ResponseHeader.SERVER, getServerName());
+        }
+
+        // Set Date
+        if(!responseHeaders.containsKey(ResponseHeader.DATE))
+        {
+            responseHeaders.put(ResponseHeader.DATE, getDate());
+        }
     }
 
     // returns the reason phrase for the provided http status code
@@ -94,6 +115,14 @@ public class HttpResponseBuilder {
     public static int getContentLength(String responseBody)
     {
         return responseBody.length();
+    }
+
+    private String internalServerException() {
+        // change the status code of the current response to 500 and resend the response
+        this.response = new HttpResponse();
+        response.setStatusCode(500);
+
+        return getResponseString();
     }
 
 }
