@@ -1,5 +1,6 @@
 package src.server.request;
 
+import java.io.*;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -8,7 +9,7 @@ import src.server.request.HttpRequestHeader.RequestHeader;
 /**
  * Sample Http Request -
  * 
- * GET /public.html HTTP/1.1
+ * GET /index.html HTTP/1.1
  * Host: gross.com
  * Connection: keep-alive
  * User-Agent: Chrome/1.0
@@ -16,78 +17,113 @@ import src.server.request.HttpRequestHeader.RequestHeader;
  */
 public class HttpRequest {
 
-    private String request;
-    private RequestLine requestLine;
+    private String uri;
+    private String version;
+    private HttpRequestMethod method;
+    private BufferedReader request;
     private Map<RequestHeader, String> headers;
     private String requestBody;
     private boolean isRequestBodyExists;
 
-    HttpRequest(String request)
+    public HttpRequest(BufferedReader request) throws IOException
     {
         this.request = request;
-        requestLine = new RequestLine();
         headers = new HashMap<RequestHeader, String>();
 
         parseRequest();
     }
 
-    private void parseRequest()
+    public String getUri() {
+        return this.uri;
+    }
+
+    private void parseRequest() throws IOException, UnsupportedOperationException
     {
-        if(request == null || request.isEmpty()) {
+        if(request == null) {
             // nothing to parse
             return ;
         }
 
-        String[] requestLines = request.split("\r\n");
-
         // first line corresponds to RequestLine
-        parseRequestLine(requestLines[0]);
+        parseRequestLine(request.readLine());
 
-        // parse all headers and body
-        parseHeaders(requestLines);
+        // parse all headers
+        parseHeaders();
 
         // request body
         if(isRequestBodyExists) {
-            requestBody = requestLines[requestLines.length - 1];
+            // Request body is not supported yet !!
+
+            // requestBody = request.readLine();
+            // System.out.println("Request body: "+ requestBody);
         }
+
+        System.out.println("Completed parsing the request");
     }
 
-    private void parseHeaders(String[] requestLines)
+    private void parseHeaders() throws IOException
     {
-        int size = requestLines.length;
+        while(true) {
+            String line = request.readLine();
+            System.out.println("Header line: "+ line);
 
-        // parse the headers
-        int i = 1;
-        for(;i < size; i++) {
-            if(requestLines[i].equals("")) {
-                // request body follows an empty body. so break here
+            if(line == null) {
+                // no more lines to read and request body doesn't exist
+                isRequestBodyExists = false;
+                System.out.println("Encountered a null line. Marking end of request");
                 break;
             }
 
-            String[] header = requestLines[i].split(": ");
+            if(line.equals("")) {
+                // End of request headers
+                // followed by request body
+                isRequestBodyExists = true;
+                System.out.println("Encountered an empty line. Will attempt to read response body next.");
+                break;
+            }
+
+            // parse the header
+            String[] header = line.split(": ");
             RequestHeader headerType = RequestHeader.valueOfHeaderType(header[0]);
-            headers.put(headerType, header[1]);
+            if(headerType != null) {
+                headers.put(headerType, header[1]);
+            }
         }
-        
-        if(i != size) {
-            isRequestBodyExists = true;
-        }
+
+        System.out.println("Completed parsing the headers");
     }
 
-    private void parseRequestLine(String requestFirstLine)
+    private void parseRequestLine(String requestFirstLine) throws UnsupportedOperationException
     {
         String[] args = requestFirstLine.split(" ");
+        System.out.println("Request first line: "+ requestFirstLine);
 
-        requestLine.method = HttpRequestMethod.valueOfMethod(args[0].toLowerCase());
-        requestLine.uri = args[1];
-        requestLine.version = args[2];
+        this.method = HttpRequestMethod.valueOfMethod(args[0].toLowerCase());
+
+        if(method == null) {
+            throw new UnsupportedOperationException(String.format("Http Method %s is not supported yet.", args[0]));
+        }
+
+        this.uri = args[1];
+
+        // default to HTTP/1.1 if not specified
+        if(args.length >= 2) {
+            this.version = args[2];
+        } else {
+            this.version = "HTTP/1.1";
+        }
     }
 
-    public static class RequestLine
+    public String handleRequest() throws UnsupportedOperationException
     {
-        public HttpRequestMethod method;
-        public String uri;
-        public String version;
-    } 
+        HttpRequestHandler requestHandler = new HttpRequestHandler(this);
+        switch(method)
+        {
+            case GET :
+                return requestHandler.handleGetRequest();
+            default :
+                throw new UnsupportedOperationException(String.format("Http Method %s is not supported yet.", method.toString()));
+        }
+    }
     
 }

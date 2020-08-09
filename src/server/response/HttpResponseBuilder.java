@@ -42,8 +42,7 @@ public class HttpResponseBuilder {
         {
             response.append(String.format("HTTP/1.1 %d %s\r\n", statusCode, getHttpResponseState(statusCode)));
             
-            // TODO: update with isNullOrEmpty method with appropriate import
-            if(serverName == null || serverName.equals("")) {
+            if(serverName == null || serverName.isEmpty()) {
                 serverName = getServerName();
             }
             response.append(String.format("Server: %s\r\n", serverName));

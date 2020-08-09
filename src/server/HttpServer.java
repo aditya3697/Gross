@@ -2,6 +2,7 @@ package src.server;
 
 import java.io.*;
 import java.net.*;
+import src.server.request.HttpRequest;
 import src.server.response.HttpResponseBuilder;
 
 public class HttpServer extends Thread {
@@ -31,14 +32,26 @@ public class HttpServer extends Thread {
                 Socket socket = server.accept();
                 System.out.println("Connection acception from "+ socket.getRemoteSocketAddress());
 
-                BufferedReader request = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                BufferedReader requestReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 BufferedWriter responseWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 
-                System.out.println("request: " + request.readLine());
+                // parse the received request
+                HttpRequest request = new HttpRequest(requestReader);
+
+                // handle the received request
+                String responseStr = request.handleRequest();
+
                 System.out.println("Thank you for connecting to " + socket.getLocalSocketAddress()
                 + "\nGoodbye!");
-                String response = HttpResponseBuilder.getResponse("Yo! it worked!!");
+
+
+                // ---------- Temp Code ----------------
+                
+                String response = HttpResponseBuilder.getResponse(responseStr);
+
+                // --------- Temp Code End --------------
+
                 System.out.println(response);
 
                 responseWriter.write(response);
