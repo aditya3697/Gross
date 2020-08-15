@@ -12,7 +12,12 @@
 3. **ant jar** - creates two jar files, one for server and one for client
 4. **ant run** - starts the http server
 5. **ant run_client** - Executes the client program which can be used for testing
-Note - **ant** should be installed
+
+
+Note - 
+1. **ant** should be installed
+2. Client functionality is depricated
+
 
 ### Daemonize the server
 Applicable only for Linux distributions. 
