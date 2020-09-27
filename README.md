@@ -16,7 +16,7 @@
 
 Note - 
 1. **ant** should be installed
-2. Client functionality is depricated
+2. Client functionality is depricated. Use browser instead.
 
 
 ### Daemonize the server
